@@ -1,0 +1,78 @@
+# Cursor-To-OpenAI-Nexus Sample Configuration
+
+# Server configuration
+server:
+  port: 3010
+  host: "0.0.0.0"
+
+# API configuration
+api:
+  # Your custom API key (will be automatically prefixed with "sk-" if not present)
+  key: "cursor-api-key"
+  
+  # Rotation strategy (random, round-robin, default)
+  rotation_strategy: "default"
+
+# Cursor configuration
+cursor:
+  # Your Cursor session token (WorkosCursorSessionToken)
+  token: "your_cursor_token_here"
+  
+  # Available models
+  models:
+    - "claude-3.7-sonnet-thinking"
+    - "claude-3.7-sonnet"
+    - "claude-3.5-sonnet"
+    - "claude-3-opus"
+    - "claude-3.5-haiku"
+    - "cursor/cursor-small"
+    - "cursor/gpt-3.5-turbo"
+    - "cursor/gpt-4"
+    - "cursor/gpt-4-turbo"
+    - "cursor/gpt-4o"
+    - "cursor/gpt-4o-mini"
+    - "cursor/o1-mini"
+    - "cursor/o1-preview"
+
+# TLS proxy configuration
+proxy:
+  # Whether to use TLS proxy (recommended to avoid blocks)
+  enabled: true
+  
+  # Platform (auto, windows_x64, linux_x64, android_arm64)
+  platform: "auto"
+
+# Auto-refresh configuration
+refresh:
+  # Whether to enable automatic cookie refresh
+  enabled: false
+  
+  # Cron schedule for auto-refresh (default: every 6 hours)
+  schedule: "0 */6 * * *"
+  
+  # Minimum cookie count before triggering refresh
+  min_count: 3
+  
+  # Refresh mode (replace, append)
+  mode: "replace"
+
+# Logging configuration
+logging:
+  # Log level (ERROR, WARN, INFO, DEBUG, TRACE)
+  level: "INFO"
+  
+  # Log format (colored, json, simple)
+  format: "colored"
+  
+  # Whether to log to file
+  to_file: true
+  
+  # Maximum log file size in MB
+  max_size: 10
+  
+  # Maximum number of log files to keep
+  max_files: 10
+  
+  # HTTP log format (tiny, combined, common, dev, short)
+  http_format: "tiny"
+
