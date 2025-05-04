@@ -369,7 +369,8 @@ function Show-UsageExamples {
     
     # Python example
     Write-Host "`nPython Example:" -ForegroundColor $YELLOW
-    Write-Host @"
+    $pythonExample = @"
+# Python code
 from openai import OpenAI
 
 # Initialize the client with your API key
@@ -386,7 +387,8 @@ response = client.chat.completions.create(
 )
 
 print(response.choices[0].message.content)
-"@ -ForegroundColor $WHITE
+"@
+    Write-Host $pythonExample -ForegroundColor $WHITE
     
     # cURL example
     Write-Host "`ncURL Example:" -ForegroundColor $YELLOW
