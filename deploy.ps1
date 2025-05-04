@@ -59,7 +59,7 @@ function Test-Prerequisites {
     foreach ($prereq in $prerequisites.Keys) {
         $check = & $prerequisites[$prereq]
         if ($check) {
-            Write-Host "✓ $prereq is installed" -ForegroundColor $GREEN
+            Write-Host "√ $prereq is installed" -ForegroundColor $GREEN
         } else {
             Write-Host "✗ $prereq is not installed" -ForegroundColor $RED
             $allMet = $false
@@ -367,9 +367,9 @@ function Show-UsageExamples {
     Write-Host "`nUsage Examples" -ForegroundColor $MAGENTA
     Write-Host "==============" -ForegroundColor $MAGENTA
     
-    # Python example
+    # Python example - using PowerShell here-string syntax
     Write-Host "`nPython Example:" -ForegroundColor $YELLOW
-    Write-Host @"
+    $pythonExample = @"
 from openai import OpenAI
 
 # Initialize the client with your API key
@@ -386,11 +386,12 @@ response = client.chat.completions.create(
 )
 
 print(response.choices[0].message.content)
-"@ -ForegroundColor $WHITE
+"@
+    Write-Host $pythonExample -ForegroundColor $WHITE
     
     # cURL example
     Write-Host "`ncURL Example:" -ForegroundColor $YELLOW
-    Write-Host @"
+    $curlExample = @"
 curl -X POST http://localhost:3010/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $ApiKey" \
@@ -404,7 +405,8 @@ curl -X POST http://localhost:3010/v1/chat/completions \
     ],
     "stream": false
   }'
-"@ -ForegroundColor $WHITE
+"@
+    Write-Host $curlExample -ForegroundColor $WHITE
     
     # Web UI
     Write-Host "`nWeb Interface:" -ForegroundColor $YELLOW
