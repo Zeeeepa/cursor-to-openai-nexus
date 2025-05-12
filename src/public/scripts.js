@@ -1,19 +1,29 @@
 // 模态框相关功能
 document.addEventListener('DOMContentLoaded', function() {
-    // 获取模态框元素
-    const modal = document.getElementById('editModal');
-    const closeBtn = document.getElementsByClassName('close')[0];
+    // 获取所有模态框和关闭按钮
+    const modals = document.querySelectorAll('.modal');
+    const closeBtns = document.querySelectorAll('.close');
     
-    // 关闭模态框
-    closeBtn.onclick = function() {
-        modal.style.display = 'none';
+    // 关闭所有模态框的函数
+    function closeAllModals() {
+        modals.forEach(modal => {
+            modal.style.display = 'none';
+        });
+        document.body.classList.remove('modal-open');
     }
+    
+    // 为每个关闭按钮添加事件
+    closeBtns.forEach(btn => {
+        btn.onclick = closeAllModals;
+    });
     
     // 点击模态框外部关闭
     window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-        }
+        modals.forEach(modal => {
+            if (event.target == modal) {
+                closeAllModals();
+            }
+        });
     }
     
     // 页面加载时获取 API Key 列表和无效Cookie列表
@@ -251,9 +261,18 @@ async function editApiKey(apiKey) {
         document.getElementById('newCookie').value = '';
         
         // 显示模态框
-        document.getElementById('editModal').style.display = 'block';
+        const modal = document.getElementById('editModal');
+        modal.style.display = 'block';
+        document.body.classList.add('modal-open');
+        
     } catch (error) {
-        alert(`获取 ${apiKey} 的Cookie值失败: ${error.message}`);
+        console.error('打开修改模态框失败:', error);
+        document.getElementById('editModalMessage').innerHTML = `
+            <div class="error">无法加载Cookie数据: ${error.message}</div>
+        `;
+        const modal = document.getElementById('editModal');
+        modal.style.display = 'block'; // 即使出错也显示模态框，以便显示错误信息
+        document.body.classList.add('modal-open');
     }
 }
 
@@ -1085,8 +1104,17 @@ function checkAuth() {
             localStorage.removeItem('adminToken');
             window.location.href = '/login.html';
         } else {
-            // 显示管理员用户名
-            document.getElementById('adminUsername').textContent = `管理员：${data.username}`;
+            // 更新为新的用户名显示方式
+            const usernameElem = document.getElementById('usernameText');
+            if (usernameElem) {
+                usernameElem.textContent = data.username;
+            } else {
+                // 兼容旧版模板，可能没有usernameText元素
+                const adminElem = document.getElementById('adminUsername');
+                if (adminElem) {
+                    adminElem.textContent = `管理员：${data.username}`;
+                }
+            }
         }
     })
     .catch(error => {
@@ -1133,29 +1161,24 @@ function addAuthHeader(headers = {}) {
 async function openInvalidCookieModal() {
     try {
         document.getElementById('invalidCookieModalMessage').innerHTML = '';
-        
-        // 获取当前无效Cookie列表
         const invalidCookies = await getInvalidCookies();
-        
-        // 更新隐藏的textarea
-        document.getElementById('invalidCookiesValues').value = invalidCookies.join(',');
-        
-        // 渲染Cookie标签
         renderInvalidCookieTags(invalidCookies);
-        
-        // 清空新Cookie输入框
+        document.getElementById('invalidCookiesValues').value = invalidCookies.join(',');
         document.getElementById('newInvalidCookie').value = '';
-        
-        // 显示模态框
-        document.getElementById('invalidCookieModal').style.display = 'block';
+        const modal = document.getElementById('invalidCookieModal');
+        modal.style.display = 'block';
+        document.body.classList.add('modal-open');
     } catch (error) {
-        alert(`获取无效Cookie失败: ${error.message}`);
+        console.error('打开无效Cookie模态框失败:', error);
+        showMessage('invalidCookiesContainer', `加载无效Cookie失败: ${error.message}`, 'error');
     }
 }
 
-// 关闭无效Cookie模态窗口
+// 关闭无效Cookie模态框
 function closeInvalidCookieModal() {
-    document.getElementById('invalidCookieModal').style.display = 'none';
+    const modal = document.getElementById('invalidCookieModal');
+    modal.style.display = 'none';
+    document.body.classList.remove('modal-open');
 }
 
 // 渲染无效Cookie标签

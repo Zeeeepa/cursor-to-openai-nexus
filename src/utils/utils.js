@@ -96,6 +96,8 @@ function generateCursorBody(messages, modelName) {
 
 function chunkToUtf8String(chunk) {
   const results = []
+  const thinkingResults = []
+  const contentResults = []
   const errorResults = { hasError: false, errorMessage: '' }
   let isThinking = false;
   const buffer = Buffer.from(chunk, 'hex');
@@ -113,12 +115,14 @@ function chunkToUtf8String(chunk) {
         const response = $root.StreamUnifiedChatWithToolsResponse.decode(gunzipData);
         const thinking = response?.message?.thinking?.content
         if (thinking !== undefined && thinking.length > 0){
-            results.push(thinking);
+            thinkingResults.push(thinking);
+            // console.log('[DEBUG] 收到 thinking:', thinking);
             isThinking = true;
         }
         const content = response?.message?.content
         if (content !== undefined && content.length > 0){
-          results.push(content)
+          contentResults.push(content)
+          // console.log('[DEBUG] 收到 content:', content);
         }
       }
       else if (magicNumber == 2 || magicNumber == 3) { 
@@ -154,7 +158,12 @@ function chunkToUtf8String(chunk) {
     return { error: errorResults.errorMessage };
   }
 
-  return {isThink: isThinking, content: results.join('')};
+  // 分别返回thinking和content内容
+  return {
+    isThink: isThinking, 
+    thinkingContent: thinkingResults.join(''),
+    content: contentResults.join('')
+  };
 }
 
 function generateHashed64Hex(input, salt = '') {
