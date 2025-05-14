@@ -89,6 +89,9 @@ USE_TLS_PROXY=true
 # linux_x64: Linux 64位
 # android_arm64: 安卓ARM 64位
 PROXY_PLATFORM=auto
+
+# 是否使用其它接口 (true 或 false)
+USE_OTHERS=true
 `;
 
 // 提示信息
@@ -173,6 +176,11 @@ function loadExistingConfig() {
       if (envConfig.PROXY_PLATFORM) {
         existingConfig.proxyPlatform = envConfig.PROXY_PLATFORM;
       }
+
+      // 提取是否使用其它接口
+      if (envConfig.USE_OTHERS !== undefined) {
+        existingConfig.useOthers = envConfig.USE_OTHERS === 'true';
+      }
       
       console.log('成功加载现有配置');
     } catch (error) {
@@ -209,7 +217,8 @@ async function collectConfig() {
     emailConfigs: [],
     cookieRefreshMode: 'replace',
     useTlsProxy: existingConfig.useTlsProxy,
-    proxyPlatform: existingConfig.proxyPlatform
+    proxyPlatform: existingConfig.proxyPlatform,
+    useOthers: existingConfig.useOthers
   };
 
   // 获取GitHub用户名
@@ -296,6 +305,12 @@ async function collectConfig() {
     config.proxyPlatform = await promptWithDefault(proxyPlatformPrompt, defaultProxyPlatform);
   }
 
+  // 询问是否使用其它接口
+  const useOthersPrompt = `是否使用其它接口? (y/n)`;
+  const defaultUseOthers = existingConfig.useOthers ? 'y' : 'n';
+  const useOthersAnswer = await promptWithDefault(useOthersPrompt, defaultUseOthers);
+  config.useOthers = useOthersAnswer.toLowerCase() === 'y';
+
   return config;
 }
 
@@ -351,6 +366,9 @@ function generateEnvFile(config) {
     
     // 更新代理服务器平台
     envContent = envContent.replace('PROXY_PLATFORM=auto', `PROXY_PLATFORM=${config.proxyPlatform}`);
+    
+    // 更新是否使用其它接口
+    envContent = envContent.replace('USE_OTHERS=true', `USE_OTHERS=${config.useOthers}`);
     
     // 写入.env文件
     const envPath = path.join(process.cwd(), '.env');
@@ -408,6 +426,10 @@ async function main() {
         console.log(`- 代理服务器平台: ${config.proxyPlatform}`);
       }
       console.log('你可以在.env文件中修改USE_TLS_PROXY和PROXY_PLATFORM设置');
+
+      // 显示是否使用其它接口配置信息
+      console.log(`\n当前是否使用其它接口: ${config.useOthers ? '是' : '否'}`);
+      console.log('你可以在.env文件中修改USE_OTHERS设置');
     }
   } catch (error) {
     console.error('\n❌ 配置过程中出错:', error.message);

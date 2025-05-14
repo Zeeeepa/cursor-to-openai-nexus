@@ -424,7 +424,18 @@ router.post('/chat/completions', async (req, res) => {
     const sessionid = uuidv5(authToken,  uuidv5.DNS);
     const clientKey = generateHashed64Hex(authToken);
     const cursorClientVersion = "0.49.4";
-
+    
+    // 在请求聊天接口前，依次调用6个接口
+    if (process.env.USE_OTHERS === 'true') {
+      try{
+        others(authToken, clientKey, checksum, cursorClientVersion, sessionid).then( () => {
+          logger.info("其它接口异步调用成功");
+        });
+      } catch (error) {
+        logger.error(error.message);
+      }
+    }
+    
     const cursorBody = generateCursorBody(messages, model);
     
     // 添加代理支持
@@ -1316,7 +1327,179 @@ router.delete("/logs", (req, res) => {
     });
   }
 });
+async function others(authToken, clientKey, checksum, cursorClientVersion, sessionid){
+  // 定义所有API端点配置
+  const endpoints = [
+    {
+      url: 'https://api2.cursor.sh/aiserver.v1.AiService/CheckFeatureStatus',
+      method: 'POST',
+      headers: {
+        'accept-encoding': 'gzip',
+        'authorization': `Bearer ${authToken}`,
+        'connect-protocol-version': '1',
+        'content-type': 'application/proto',
+        'user-agent': 'connect-es/1.6.1',
+        'x-client-key': clientKey,
+        'x-cursor-checksum': checksum,
+        'x-cursor-client-version': cursorClientVersion,
+        'x-cursor-config-version': uuidv4(),
+        'x-cursor-timezone': 'Asia/Tokyo',
+        'x-ghost-mode': 'true',
+        'x-new-onboarding-completed': 'false',
+        'x-session-id': sessionid,
+        'Host': 'api2.cursor.sh',
+      },
+      body: '', // 实际长度为23字节
+      timeout: {
+        connect: 5000,
+        read: 30000
+      }
+    },
+    {
+      url: 'https://api2.cursor.sh/aiserver.v1.AiService/AvailableDocs',
+      method: 'POST',
+      headers: {
+        'authorization': `Bearer ${authToken}`,
+        'connect-accept-encoding': 'gzip',
+        'connect-protocol-version': '1',
+        'content-type': 'application/proto',
+        'user-agent': 'connect-es/1.6.1',
+        'x-amzn-trace-id': `Root=${uuidv4()}`,
+        'x-client-key': clientKey,
+        'x-cursor-checksum': checksum,
+        'x-cursor-client-version': cursorClientVersion,
+        'x-cursor-config-version': uuidv4(),
+        'x-cursor-timezone': 'Asia/Tokyo',
+        'x-ghost-mode': 'true',
+        'x-request-id': uuidv4(),
+        'x-session-id': sessionid,
+        'Host': 'api2.cursor.sh',
+      },
+      timeout: {
+        connect: 5000,
+        read: 30000
+      }
+    },
+    {
+      url: 'https://api2.cursor.sh/aiserver.v1.DashboardService/GetTeams',
+      method: 'POST',
+      headers: {
+        'accept-encoding': 'gzip',
+        'authorization': `Bearer ${authToken}`,
+        'connect-protocol-version': '1',
+        'content-type': 'application/proto',
+        'user-agent': 'connect-es/1.6.1',
+        'x-amzn-trace-id': `Root=${uuidv4()}`,
+        'x-client-key': clientKey,
+        'x-cursor-checksum': checksum,
+        'x-cursor-client-version': cursorClientVersion,
+        'x-cursor-config-version': uuidv4(),
+        'x-cursor-timezone': 'Asia/Tokyo',
+        'x-ghost-mode': 'true',
+        'x-new-onboarding-completed': 'false',
+        'x-request-id': uuidv4(),
+        'x-session-id': sessionid,
+        'Host': 'api2.cursor.sh',
+      },
+      body: '',
+      timeout: {
+        connect: 5000,
+        read: 30000
+      }
+    },
+    {
+      url: 'https://api2.cursor.sh/auth/full_stripe_profile',
+      method: 'GET',
+      headers: {
+        'Host': 'api2.cursor.sh',
+        'Connection': 'keep-alive',
+        'Authorization': `Bearer ${authToken}`,
+        'x-new-onboarding-completed': 'false',
+        'x-ghost-mode': 'true',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/0.49.4 Chrome/132.0.6834.210 Electron/34.3.4 Safari/537.36',
+        'Accept': '*/*',
+        'Origin': 'vscode-file://vscode-app',
+        'Sec-Fetch-Site': 'cross-site',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Dest': 'empty',
+        'Accept-Encoding': 'gzip, deflate, br, zstd',
+        'Accept-Language': 'zh-CN'
+      },
+      timeout: {
+        connect: 5000,
+        read: 30000
+      }
+    },
+    {
+      url: 'https://api2.cursor.sh/aiserver.v1.DashboardService/GetUsageBasedPremiumRequests',
+      method: 'POST',
+      headers: {
+        'accept-encoding': 'gzip',
+        'authorization': `Bearer ${authToken}`,
+        'connect-protocol-version': '1',
+        'content-type': 'application/proto',
+        'user-agent': 'connect-es/1.6.1',
+        'x-client-key': clientKey,
+        'x-cursor-checksum': checksum,
+        'x-cursor-client-version': cursorClientVersion,
+        'x-cursor-config-version': uuidv4(),
+        'x-cursor-timezone': 'Asia/Tokyo',
+        'x-ghost-mode': 'true',
+        'x-new-onboarding-completed': 'false',
+        'x-session-id': sessionid,
+        'Host': 'api2.cursor.sh',
+      },
+      body: '',
+      timeout: {
+        connect: 5000,
+        read: 30000
+      }
+    },
+    {
+      url: 'https://api2.cursor.sh/aiserver.v1.DashboardService/GetHardLimit',
+      method: 'POST',
+      headers: {
+        'accept-encoding': 'gzip',
+        'authorization': `Bearer ${authToken}`,
+        'connect-protocol-version': '1',
+        'content-type': 'application/proto',
+        'user-agent': 'connect-es/1.6.1',
+        'x-client-key': clientKey,
+        'x-cursor-checksum': checksum,
+        'x-cursor-client-version': cursorClientVersion,
+        'x-cursor-config-version': uuidv4(),
+        'x-cursor-timezone': 'Asia/Tokyo',
+        'x-ghost-mode': 'true',
+        'x-new-onboarding-completed': 'false',
+        'x-session-id': sessionid,
+        'Host': 'api2.cursor.sh',
+      },
+      body: '',
+      timeout: {
+        connect: 5000,
+        read: 30000
+      }
+    }
+  ];
 
+  // 随机选择2-4个接口调用
+  const minApis = 2;
+  const maxApis = 4;
+  const numApisToCall = Math.floor(Math.random() * (maxApis - minApis + 1)) + minApis;
+  
+  // 随机打乱数组并取前几个元素
+  const shuffledEndpoints = [...endpoints].sort(() => 0.5 - Math.random()).slice(0, numApisToCall);
+  
+  // 调用选中的接口
+  for (const endpoint of shuffledEndpoints) {
+    fetch(endpoint.url, {
+      method: endpoint.method,
+      headers: endpoint.headers,
+      body: endpoint.body || undefined,
+      timeout: endpoint.timeout
+    });
+  }
+}
 // 在文件末尾添加错误处理函数
 function handleCursorError(errorStr, bearerToken, originalAuthToken) {
   let message = '';
